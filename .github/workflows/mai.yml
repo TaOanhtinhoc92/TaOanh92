@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main", "master"] # Chạy khi có code mới đẩy lên nhánh main hoặc master
+    branches: ["mai", "master"] # Chạy khi có code mới đẩy lên nhánh main hoặc master
   workflow_dispatch:
 
 permissions:
