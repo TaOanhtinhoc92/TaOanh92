@@ -1,0 +1,6 @@
+{
+  "name": "Bài Giảng Điện Tử Công Nghệ 4 - Kết Nối Tri Thức",
+  "description": "Hệ thống bài giảng điện tử tương tác môn Công nghệ lớp 4 theo bộ sách Kết nối tri thức với cuộc sống, chuẩn 35 tiết phân phối chương trình dành cho giáo viên và học sinh.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
