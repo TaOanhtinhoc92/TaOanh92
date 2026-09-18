@@ -91,35 +91,66 @@ export const ApplyView: React.FC<ApplyViewProps> = ({ activities, isTeacherMode,
               />
             </div>
 
-            {/* Expandable Sample Response */}
+            {/* Expandable Sample Response (Hidden by default for teaching in class) */}
             <div>
               <button
                 id={`btn-apply-toggle-${act.id}`}
+                type="button"
                 onClick={() => toggleExpand(act.id)}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-teal-50 hover:bg-teal-100/70 text-teal-900 font-bold text-sm transition-all cursor-pointer"
+                className={`w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all cursor-pointer border ${
+                  expandedResponses[act.id]
+                    ? 'bg-teal-100/90 text-teal-950 border-teal-300 shadow-xs'
+                    : 'bg-teal-50 hover:bg-teal-100/70 text-teal-900 border-teal-200 shadow-2xs'
+                }`}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Sparkles className="w-4 h-4 text-teal-600" />
-                  <span>{expandedResponses[act.id] || isTeacherMode ? 'Gợi ý xử lý tình huống mẫu' : 'Bấm để xem Gợi ý phương án hay'}</span>
+                  <span>
+                    {expandedResponses[act.id]
+                      ? 'Gợi ý xử lý tình huống mẫu (SGK)'
+                      : 'Bấm để xem Gợi ý phương án hay / xử lý tình huống'}
+                  </span>
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      expandedResponses[act.id]
+                        ? 'bg-teal-200 text-teal-800'
+                        : 'bg-teal-100 text-teal-700'
+                    }`}
+                  >
+                    {expandedResponses[act.id] ? 'Đang mở' : 'Mặc định ẩn khi dạy'}
+                  </span>
                 </div>
-                {expandedResponses[act.id] || isTeacherMode ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
+                <div className="flex items-center gap-1 text-xs font-semibold text-teal-800 shrink-0">
+                  <span>{expandedResponses[act.id] ? 'Thu gọn' : 'Mở xem'}</span>
+                  {expandedResponses[act.id] ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </div>
               </button>
 
-              {(expandedResponses[act.id] || isTeacherMode) && (
+              {expandedResponses[act.id] && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-2 p-4 rounded-xl bg-white border border-teal-200 text-slate-700 text-sm md:text-base leading-relaxed space-y-1"
+                  initial={{ opacity: 0, height: 0, y: -4 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-2 p-4 rounded-xl bg-white border border-teal-200 text-slate-700 text-sm md:text-base leading-relaxed space-y-1 shadow-xs"
                 >
-                  <div className="flex items-center gap-1.5 font-bold text-teal-800">
-                    <CheckCircle className="w-4 h-4 text-teal-600" />
-                    <span>Phương án tham khảo:</span>
+                  <div className="flex items-center justify-between font-bold text-teal-800 flex-wrap gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-4 h-4 text-teal-600" />
+                      <span>Phương án tham khảo (Giáo viên phân tích):</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(act.id)}
+                      className="text-xs text-slate-400 hover:text-slate-600 font-medium underline cursor-pointer"
+                    >
+                      Thu gọn / Ẩn gợi ý
+                    </button>
                   </div>
-                  <p className="pl-5 leading-relaxed">{act.sampleResponse}</p>
+                  <p className="pl-5 leading-relaxed text-slate-800">{act.sampleResponse}</p>
                 </motion.div>
               )}
             </div>

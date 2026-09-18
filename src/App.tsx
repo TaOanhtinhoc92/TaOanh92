@@ -17,11 +17,17 @@ import { PracticeView } from './components/PracticeView';
 import { ApplyView } from './components/ApplyView';
 import { ChallengeView } from './components/ChallengeView';
 import { RememberView } from './components/RememberView';
-import { AlertCircle, HelpCircle, Keyboard, Sparkles } from 'lucide-react';
+import { MediaCenterModal } from './components/MediaCenterModal';
+import { getMediaForPeriod } from './utils/mediaManager';
+import { AlertCircle, HelpCircle, Keyboard, Sparkles, Type, Camera } from 'lucide-react';
+import { FontSizeLevel } from './types';
 
 const STORAGE_KEY_PERIOD = 'congnghe4_current_period';
 const STORAGE_KEY_COMPLETED = 'congnghe4_completed_periods';
 const STORAGE_KEY_TEACHER_MODE = 'congnghe4_teacher_mode';
+const STORAGE_KEY_FONT_SIZE = 'congnghe4_font_size';
+
+const FONT_LEVELS: FontSizeLevel[] = ['normal', 'large', 'xlarge', 'huge'];
 
 export default function App() {
   const confettiRef = useRef<ConfettiHandle>(null);
@@ -47,9 +53,24 @@ export default function App() {
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
-  // Sidebar and Teacher Guide Modals
+  // Classroom Font Scaling for Projector & Remote Viewing
+  const [fontSize, setFontSize] = useState<FontSizeLevel>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_FONT_SIZE);
+    if (saved && FONT_LEVELS.includes(saved as FontSizeLevel)) {
+      return saved as FontSizeLevel;
+    }
+    return 'normal';
+  });
+
+  // Temporary toast for font size change feedback
+  const [fontToast, setFontToast] = useState<string | null>(null);
+  const isFirstRender = useRef(true);
+
+  // Sidebar, Teacher Guide and Visual Media Modals
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isTeacherGuideOpen, setIsTeacherGuideOpen] = useState<boolean>(false);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState<boolean>(false);
+  const [mediaRefreshKey, setMediaRefreshKey] = useState<number>(0);
 
   // Completed periods array
   const [completedPeriods, setCompletedPeriods] = useState<number[]>(() => {
@@ -60,6 +81,30 @@ export default function App() {
       return [];
     }
   });
+
+  // Apply font scale to documentElement
+  useEffect(() => {
+    const root = document.documentElement;
+    FONT_LEVELS.forEach((lvl) => root.classList.remove(`font-scale-${lvl}`));
+    root.classList.add(`font-scale-${fontSize}`);
+    localStorage.setItem(STORAGE_KEY_FONT_SIZE, fontSize);
+
+    if (!isFirstRender.current) {
+      const labels: Record<FontSizeLevel, string> = {
+        normal: 'Cỡ chữ: Vừa (100% - Tiêu chuẩn)',
+        large: 'Cỡ chữ: Lớn (115% - Giảng dạy gần)',
+        xlarge: 'Cỡ chữ: Rất lớn (130% - Chiếu xa / Cuối lớp nhìn rõ)',
+        huge: 'Cỡ chữ: Cực lớn (145% - Tầm nhìn xa tối đa)',
+      };
+      setFontToast(labels[fontSize]);
+      const timer = setTimeout(() => {
+        setFontToast(null);
+      }, 2400);
+      return () => clearTimeout(timer);
+    } else {
+      isFirstRender.current = false;
+    }
+  }, [fontSize]);
 
   // Save current period to localStorage
   useEffect(() => {
@@ -98,11 +143,34 @@ export default function App() {
           soundManager.playClick();
           setActiveStep(stepOrder[currentIdx - 1]);
         }
+      } else if (e.key === ']') {
+        // Increase font size
+        setFontSize((prev) => {
+          const idx = FONT_LEVELS.indexOf(prev);
+          if (idx < FONT_LEVELS.length - 1) {
+            soundManager.playClick();
+            return FONT_LEVELS[idx + 1];
+          }
+          return prev;
+        });
+      } else if (e.key === '[') {
+        // Decrease font size
+        setFontSize((prev) => {
+          const idx = FONT_LEVELS.indexOf(prev);
+          if (idx > 0) {
+            soundManager.playClick();
+            return FONT_LEVELS[idx - 1];
+          }
+          return prev;
+        });
       } else if (e.key.toLowerCase() === 't') {
         soundManager.playClick();
         setIsTeacherMode((prev) => !prev);
       } else if (e.key.toLowerCase() === 'm') {
         toggleMute();
+      } else if (e.key.toLowerCase() === 'v') {
+        soundManager.playClick();
+        setIsMediaModalOpen((prev) => !prev);
       }
     };
 
@@ -113,6 +181,9 @@ export default function App() {
   // Get active period data
   const periodData = getPeriodByNumber(currentPeriodNumber) || getPeriodByNumber(1)!;
   const { period, lesson, part } = periodData;
+
+  // Real Visual Media for current period (auto-recalculates when mediaRefreshKey updates)
+  const currentMediaList = getMediaForPeriod(currentPeriodNumber);
 
   // Navigation handlers
   const handleSelectPeriod = (num: number) => {
@@ -183,6 +254,10 @@ export default function App() {
         onToggleFullscreen={handleToggleFullscreen}
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onOpenTeacherGuide={() => setIsTeacherGuideOpen(true)}
+        onOpenMediaHub={() => setIsMediaModalOpen(true)}
+        mediaCount={currentMediaList.length}
+        fontSize={fontSize}
+        onChangeFontSize={setFontSize}
       />
 
       {/* 6-Step Period Navigation Tabs */}
@@ -237,6 +312,7 @@ export default function App() {
             activities={period.explore}
             isTeacherMode={isTeacherMode}
             onComplete={() => setActiveStep('practice')}
+            periodNumber={period.periodNumber}
           />
         )}
 
@@ -308,9 +384,35 @@ export default function App() {
               </kbd>
               <span>Bật/Tắt tiếng</span>
             </div>
+            <div className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[10px] text-slate-700">
+                [
+              </kbd>
+              <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[10px] text-slate-700">
+                ]
+              </kbd>
+              <span>Cỡ chữ chiếu xa</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[10px] text-slate-700">
+                V
+              </kbd>
+              <span>Ảnh & Video thật</span>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Floating Font Size Change Toast Notification */}
+      {fontToast && (
+        <div
+          id="toast-font-size-change"
+          className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-slate-700/80 flex items-center gap-2.5 text-xs sm:text-sm font-bold animate-in fade-in slide-in-from-bottom-3 duration-200 pointer-events-none"
+        >
+          <Type className="w-4 h-4 text-amber-400" />
+          <span>{fontToast}</span>
+        </div>
+      )}
 
       {/* Curriculum 35-Period Drawer */}
       <Sidebar
@@ -326,6 +428,16 @@ export default function App() {
         isOpen={isTeacherGuideOpen}
         onClose={() => setIsTeacherGuideOpen(false)}
         period={period}
+      />
+
+      {/* Visual Media Center Modal (Real Photos & Educational Videos) */}
+      <MediaCenterModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        period={period}
+        mediaList={currentMediaList}
+        onRefreshMedia={() => setMediaRefreshKey((prev) => prev + 1)}
+        isTeacherMode={isTeacherMode}
       />
     </div>
   );

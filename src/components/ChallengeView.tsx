@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChallengeItem } from '../types';
 import { soundManager } from '../utils/soundEffects';
-import { Trophy, Star, CheckCircle2, XCircle, ArrowRight, RotateCcw, Flame, Sparkles } from 'lucide-react';
+import { Trophy, Star, CheckCircle2, XCircle, ArrowRight, RotateCcw, Flame, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 interface ChallengeViewProps {
   challenges: ChallengeItem[];
@@ -20,6 +20,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [idx: number]: number }>({});
   const [showExplanation, setShowExplanation] = useState<{ [idx: number]: boolean }>({});
+  const [teacherRevealed, setTeacherRevealed] = useState<{ [idx: number]: boolean }>({});
   const [stars, setStars] = useState(0);
   const [streak, setStreak] = useState(0);
 
@@ -137,14 +138,40 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({
           transition={{ duration: 0.25 }}
           className="bg-white rounded-2xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6"
         >
-          {/* Question Text */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
-              Câu hỏi {currentIdx + 1} / {challenges.length}
-            </span>
-            <h3 className="text-xl md:text-2xl font-bold text-slate-800 leading-snug">
-              {currentItem.question}
-            </h3>
+          {/* Question Text & Teacher Control */}
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
+                Câu hỏi {currentIdx + 1} / {challenges.length}
+              </span>
+              <h3 className="text-xl md:text-2xl font-bold text-slate-800 leading-snug">
+                {currentItem.question}
+              </h3>
+            </div>
+
+            {/* Teacher Reveal Button */}
+            {isTeacherMode && (
+              <button
+                id="btn-teacher-reveal-challenge"
+                type="button"
+                onClick={() => {
+                  soundManager.playClick();
+                  setTeacherRevealed((prev) => ({ ...prev, [currentIdx]: !prev[currentIdx] }));
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer shadow-xs ${
+                  teacherRevealed[currentIdx]
+                    ? 'bg-amber-600 text-white shadow-md'
+                    : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
+                }`}
+              >
+                {teacherRevealed[currentIdx] ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+                <span>{teacherRevealed[currentIdx] ? 'Ẩn đáp án GV' : 'Xem đáp án GV'}</span>
+              </button>
+            )}
           </div>
 
           {/* Options Grid */}
@@ -152,7 +179,8 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({
             {currentItem.options.map((opt, optIdx) => {
               const isSelected = selectedAnswers[currentIdx] === optIdx;
               const isCorrect = currentItem.correctIndex === optIdx;
-              const showResult = isSelected || isTeacherMode;
+              const isTeacherRevealActive = isTeacherMode && teacherRevealed[currentIdx];
+              const showResult = isSelected || isTeacherRevealActive;
 
               let cardStyle = 'border-slate-200 hover:border-rose-400 hover:bg-rose-50/40 bg-white text-slate-700';
 
@@ -191,7 +219,7 @@ export const ChallengeView: React.FC<ChallengeViewProps> = ({
           </div>
 
           {/* Explanation Box */}
-          {(showExplanation[currentIdx] || isTeacherMode) && (
+          {(showExplanation[currentIdx] || (isTeacherMode && teacherRevealed[currentIdx])) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}

@@ -208,3 +208,31 @@ export interface CurriculumPart {
   periodRange: string;
   lessons: Lesson[];
 }
+
+export type FontSizeLevel = 'normal' | 'large' | 'xlarge' | 'huge';
+
+export interface FontSizeOption {
+  level: FontSizeLevel;
+  label: string;
+  percentage: string;
+  description: string;
+  recommendation: string;
+}
+
+export type MediaType = 'image' | 'video';
+
+export interface VisualMediaItem {
+  id: string;
+  periodNumber: number;
+  type: MediaType;
+  url: string;
+  title: string;
+  caption?: string;
+  isCustom?: boolean;
+  addedAt?: number;
+  author?: string;
+  thumbnailUrl?: string;
+  fileId?: string;
+  fileSize?: number;
+  duration?: number;
+}
