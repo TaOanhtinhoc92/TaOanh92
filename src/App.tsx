@@ -18,6 +18,7 @@ import { ApplyView } from './components/ApplyView';
 import { ChallengeView } from './components/ChallengeView';
 import { RememberView } from './components/RememberView';
 import { MediaCenterModal } from './components/MediaCenterModal';
+import { LessonPlanModal } from './components/LessonPlanModal';
 import { getMediaForPeriod } from './utils/mediaManager';
 import { AlertCircle, HelpCircle, Keyboard, Sparkles, Type, Camera } from 'lucide-react';
 import { FontSizeLevel } from './types';
@@ -66,9 +67,10 @@ export default function App() {
   const [fontToast, setFontToast] = useState<string | null>(null);
   const isFirstRender = useRef(true);
 
-  // Sidebar, Teacher Guide and Visual Media Modals
+  // Sidebar, Teacher Guide, Lesson Plan and Visual Media Modals
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isTeacherGuideOpen, setIsTeacherGuideOpen] = useState<boolean>(false);
+  const [isLessonPlanOpen, setIsLessonPlanOpen] = useState<boolean>(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState<boolean>(false);
   const [mediaRefreshKey, setMediaRefreshKey] = useState<number>(0);
 
@@ -171,6 +173,9 @@ export default function App() {
       } else if (e.key.toLowerCase() === 'v') {
         soundManager.playClick();
         setIsMediaModalOpen((prev) => !prev);
+      } else if (e.key.toLowerCase() === 'g') {
+        soundManager.playClick();
+        setIsLessonPlanOpen((prev) => !prev);
       }
     };
 
@@ -254,6 +259,7 @@ export default function App() {
         onToggleFullscreen={handleToggleFullscreen}
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onOpenTeacherGuide={() => setIsTeacherGuideOpen(true)}
+        onOpenLessonPlan={() => setIsLessonPlanOpen(true)}
         onOpenMediaHub={() => setIsMediaModalOpen(true)}
         mediaCount={currentMediaList.length}
         fontSize={fontSize}
@@ -399,6 +405,12 @@ export default function App() {
               </kbd>
               <span>Ảnh & Video thật</span>
             </div>
+            <div className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-300 rounded font-mono text-[10px] text-indigo-700 font-bold">
+                G
+              </kbd>
+              <span>Giáo án CV 2345 (Word)</span>
+            </div>
           </div>
         </div>
       </footer>
@@ -421,6 +433,7 @@ export default function App() {
         currentPeriodNumber={currentPeriodNumber}
         onSelectPeriod={handleSelectPeriod}
         completedPeriods={completedPeriods}
+        onOpenLessonPlan={() => setIsLessonPlanOpen(true)}
       />
 
       {/* Pedagogical Plan & Teacher Guide Modal */}
@@ -438,6 +451,13 @@ export default function App() {
         mediaList={currentMediaList}
         onRefreshMedia={() => setMediaRefreshKey((prev) => prev + 1)}
         isTeacherMode={isTeacherMode}
+      />
+
+      {/* Full CV 2345 Lesson Plan Modal (Auto-generation, Direct Editing & Word Export) */}
+      <LessonPlanModal
+        isOpen={isLessonPlanOpen}
+        onClose={() => setIsLessonPlanOpen(false)}
+        initialPeriodNumber={currentPeriodNumber}
       />
     </div>
   );

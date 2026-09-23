@@ -27,6 +27,7 @@ interface HeaderProps {
   onToggleFullscreen: () => void;
   onOpenSidebar: () => void;
   onOpenTeacherGuide: () => void;
+  onOpenLessonPlan: () => void;
   onOpenMediaHub: () => void;
   mediaCount: number;
   fontSize: FontSizeLevel;
@@ -44,6 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleFullscreen,
   onOpenSidebar,
   onOpenTeacherGuide,
+  onOpenLessonPlan,
   onOpenMediaHub,
   mediaCount,
   fontSize,
@@ -97,18 +99,19 @@ export const Header: React.FC<HeaderProps> = ({
             onChangeFontSize={onChangeFontSize}
           />
 
-          {/* Pedagogical Guide Button */}
+          {/* CV 2345 Lesson Plan Button */}
           <button
             id="btn-open-pedagogy"
             onClick={() => {
               soundManager.playClick();
-              onOpenTeacherGuide();
+              onOpenLessonPlan();
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
-            title="Mục tiêu & Kế hoạch bài dạy"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            title="Kế hoạch bài dạy chuẩn Công văn 2345/BGDĐT (Tự động biên soạn, Chỉnh sửa & Tải file Word)"
           >
-            <FileText className="w-4 h-4 text-indigo-600" />
-            <span className="hidden lg:inline">Giáo án</span>
+            <FileText className="w-4 h-4 text-indigo-700" />
+            <span className="hidden md:inline">Giáo án CV 2345</span>
+            <span className="md:hidden">Giáo án</span>
           </button>
 
           {/* Visual Media Hub Button */}

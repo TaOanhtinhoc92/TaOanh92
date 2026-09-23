@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { curriculumParts, allPeriods } from '../data/curriculum';
 import { soundManager } from '../utils/soundEffects';
-import { X, Search, CheckCircle2, ChevronRight, BookOpen, Sparkles, Filter, Award } from 'lucide-react';
+import { X, Search, CheckCircle2, ChevronRight, BookOpen, Sparkles, Filter, Award, FileText } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -10,6 +10,7 @@ interface SidebarProps {
   currentPeriodNumber: number;
   onSelectPeriod: (periodNumber: number) => void;
   completedPeriods: number[];
+  onOpenLessonPlan?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -18,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentPeriodNumber,
   onSelectPeriod,
   completedPeriods,
+  onOpenLessonPlan,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSemesterTab, setActiveSemesterTab] = useState<'all' | 'hk1' | 'hk2'>('all');
@@ -247,8 +249,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
             ))}
           </div>
 
+          {/* Lesson Plan CV 2345 Quick Launch */}
+          {onOpenLessonPlan && (
+            <div className="p-3 bg-indigo-50/70 border-t border-indigo-100 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  soundManager.playClick();
+                  onClose();
+                  onOpenLessonPlan();
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-700 to-emerald-700 hover:from-indigo-800 hover:to-emerald-800 text-white font-bold text-xs shadow-xs hover:shadow-md transition-all cursor-pointer"
+              >
+                <FileText className="w-4 h-4 text-emerald-200" />
+                <span>Kế hoạch bài dạy CV 2345 (Tải file Word)</span>
+              </button>
+            </div>
+          )}
+
           {/* Footer note */}
-          <div className="p-3 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-500 font-medium shrink-0">
+          <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-500 font-medium shrink-0">
             Sách giáo khoa Công nghệ lớp 4 • Kết nối tri thức
           </div>
         </motion.div>
